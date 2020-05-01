@@ -10,12 +10,19 @@ import org.example.service.MovieService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static java.lang.String.format;
@@ -24,6 +31,139 @@ import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.*;
 
 public class StreamExercicies {
+
+    List<String> list = Arrays.asList(
+            "alpha", "bravo", "charlie", "delta", "", "echo", "foxtrot");
+    List<String> list1 = Arrays.asList(
+            "The", "Quick", "BROWN", "Fox", "Jumped", "Over", "The", "LAZY", "DOG");
+
+    private static final String WORD_REGEXP = "[- .:,]+";
+
+    @Test
+    public void stringFirstLetterOfEachWord() {
+        Predicate<String> predicate = s -> s == null || s.equals("");
+        String result = list.stream()
+                .filter(predicate.negate())
+                .map(s -> s.substring(0, 1))
+                .collect(joining());
+        Assertions.assertEquals(result, "abcdef");
+    }
+
+    @Test
+    public void removeOddLengths() {
+        Predicate<String> predicate = s -> s.length() > 0 && s.length() % 2 == 0;
+        List<String> result = list.stream()
+                .filter(predicate)
+                .collect(toList());
+        Assertions.assertEquals(result.get(0), "echo");
+    }
+
+    @Test
+    public void transformToUppercase() {
+        List<String> strings = list.stream()
+                .map(String::toUpperCase)
+                .collect(toList());
+        Assertions.assertEquals(strings.get(0), "ALPHA");
+    }
+
+    @Test
+    public void transformMapToString() {
+        Map<String, Integer> map = new TreeMap<>();
+        map.put("c", 3);
+        map.put("b", 2);
+        map.put("a", 1);
+        String strings = map.entrySet()
+                .stream()
+                .map(stringIntegerEntry -> stringIntegerEntry.getKey() + "=" + stringIntegerEntry.getValue() + ",")
+                .collect(joining());
+        System.out.println(strings.substring(0, strings.lastIndexOf(",")));
+    }
+
+    @Test
+    public void threadThatPrintsNumbersList() {
+        List<Integer> list = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        new Thread(() -> {
+            list.forEach(n -> System.out.println(n));
+        }).start();
+    }
+
+    @Test
+    public void convertToLowercaseAndPrint() {
+        list1.stream()
+                .map(String::toLowerCase)
+                .collect(toList())
+                .forEach(System.out::println);
+    }
+
+    @Test
+    public void convertToLowercaseAndPrintWithOddLength() {
+        Predicate<String> predicate = s -> s.length() % 2 != 0;
+        list1.stream()
+                .filter(predicate)
+                .map(String::toLowerCase)
+                .collect(toList())
+                .forEach(System.out::println);
+    }
+
+    @Test
+    public void joinSecondThreeFourElements() {
+        IntPredicate predicate = i -> i == 2 || i == 3 || i == 4;
+        String s = IntStream.range(0, list1.size())
+                .filter(predicate)
+                .mapToObj(i -> list1.get(i) + "-")
+                .collect(Collectors.joining());
+        System.out.println(s.substring(0, s.lastIndexOf("-")));
+    }
+
+    @Test
+    public void countNumberLines() throws IOException {
+        try (BufferedReader reader = Files.newBufferedReader(
+                Paths.get("src/main/SonnetI.txt"), StandardCharsets.UTF_8)) {
+            System.out.println(reader.lines()
+                    .count());
+        }
+    }
+
+    @Test
+    public void wordsWithNoDuplicates() throws IOException {
+        try (BufferedReader reader = Files.newBufferedReader(
+                Paths.get("src/main/SonnetI.txt"), StandardCharsets.UTF_8)) {
+            List list = reader.lines()
+                    .flatMap(line -> Stream.of(line.split(WORD_REGEXP)))
+                    .distinct()
+                    .collect(toList());
+            System.out.println(list);
+        }
+    }
+
+    @Test
+    public void wordsWithNoDuplicatesLowercaseAndSorted() throws IOException {
+        try (BufferedReader reader = Files.newBufferedReader(
+                Paths.get("src/main/SonnetI.txt"), StandardCharsets.UTF_8)) {
+            List list = reader.lines()
+                    .flatMap(line -> Stream.of(line.split(WORD_REGEXP)))
+                    .distinct()
+                    .map(String::toLowerCase)
+                    .sorted()
+                    .collect(toList());
+            System.out.println(list);
+        }
+    }
+
+    @Test
+    public void wordsWithNoDuplicatesLowercaseAndSortedByLength() throws IOException {
+        Comparator<String> comparator = comparing(s -> s.length());
+        try (BufferedReader reader = Files.newBufferedReader(
+                Paths.get("src/main/SonnetI.txt"), StandardCharsets.UTF_8)) {
+            List list = reader.lines()
+                    .flatMap(line -> Stream.of(line.split(WORD_REGEXP)))
+                    .distinct()
+                    .map(String::toLowerCase)
+                    .sorted(comparator.reversed())
+                    .collect(toList());
+            System.out.println(list);
+        }
+    }
 
     @Test
     public void averageValue() {

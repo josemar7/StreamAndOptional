@@ -47,8 +47,9 @@ public class StreamExercicies {
     @Test
     public void filterStrings() {
         String[] strings = {"bes", "ale", "vino", "asturias", "veo", "ate"};
+        Predicate<String> predicate = s -> s.length() == 3 && s.toLowerCase().startsWith("a");
         List<String> startWithA = Stream.of(strings)
-                .filter(s -> s.length() == 3 && s.toLowerCase().startsWith("a"))
+                .filter(predicate)
                 .peek(System.out::println)
                 .collect(toList());
         Assertions.assertEquals(startWithA.get(0), "ale");

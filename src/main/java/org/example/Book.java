@@ -1,5 +1,12 @@
 package org.example;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
 public class Book {
 
     private String name;
@@ -7,22 +14,6 @@ public class Book {
 
     public Book(String name, String[] words) {
         this.name = name;
-        this.words = words;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String[] getWords() {
-        return words;
-    }
-
-    public void setWords(String[] words) {
         this.words = words;
     }
 

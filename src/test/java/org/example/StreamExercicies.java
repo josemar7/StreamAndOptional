@@ -1,9 +1,6 @@
 package org.example;
 
-import org.example.dao.CityDao;
-import org.example.dao.CountryDao;
-import org.example.dao.InMemoryWorldDao;
-import org.example.dao.WorldDao;
+import org.example.dao.*;
 import org.example.model.*;
 import org.example.service.InMemoryMovieService;
 import org.example.service.MovieService;
@@ -349,55 +346,52 @@ public class StreamExercicies {
                 .forEach(System.out::println);
     }
 
-}
+    @Test
+    public void serviciosConUnidadesIgual5() {
+        Respuesta respuesta = RespuestaDaoImpl.getInstance().getRespuesta();
+//        respuesta.setPolizas(null);
+//        List<Servicio> servicios = Optional.ofNullable(respuesta.getPolizas())
+//                .orElseGet(() -> new ArrayList<>())
+//                .stream()
+//                .map(poliza -> poliza.getProductos() == null ? new ArrayList<Producto>() : poliza.getProductos())
+//                .flatMap(Collection::stream)
+//                .map(producto -> producto.getServicios() == null ? new ArrayList<Servicio>() : producto.getServicios())
+//                .flatMap(Collection::stream)
+//                .filter(servicio -> servicio.getUnidades() == 5)
+//                .collect(toList());
 
-
-class DirectorGenre implements Map.Entry<Director, Genre> {
-    private Director director;
-    private Genre genre;
-
-    public DirectorGenre(Director director, Genre genre) {
-        this.director = director;
-        this.genre = genre;
+        List<Servicio> servicios = Optional.ofNullable(respuesta.getPolizas())
+                .orElseGet(() -> new ArrayList<>())
+                .stream()
+                .map(poliza -> Optional.ofNullable(poliza.getProductos()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .flatMap(Collection::stream)
+                .map(producto -> Optional.ofNullable(producto.getServicios()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .flatMap(Collection::stream)
+                .filter(servicio -> servicio.getUnidades() == 5)
+                .collect(toList());
+        Assertions.assertEquals(servicios.size(), 1);
     }
 
-    @Override
-    public Director getKey() {
-        return director;
-    }
-
-    @Override
-    public Genre getValue() {
-        return genre;
-    }
-
-    @Override
-    public Genre setValue(Genre genre) {
-        this.genre = genre;
-        return genre;
-    }
-}
-
-class ContinentPopulatedCity implements Map.Entry<String, City> {
-    private String continent;
-    private City city;
-
-    public ContinentPopulatedCity(String continent, City city) {
-        this.continent = continent;
-        this.city = city;
-    }
-
-    @Override    public String getKey() {
-        return continent;
-    }
-
-    @Override    public City getValue() {
-        return city;
-    }
-
-    @Override    public City setValue(City city) {
-        this.city = city;
-        return city;
+    @Test
+    public void sumarUnidadesDeTodosProductos() {
+        Integer sum = Optional.ofNullable(RespuestaDaoImpl.getInstance().getRespuesta().getPolizas())
+                .orElseGet(() -> new ArrayList<>())
+                .stream()
+                .map(poliza -> Optional.ofNullable(poliza.getProductos()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .flatMap(Collection::stream)
+                .map(producto -> Optional.ofNullable(producto.getServicios()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .flatMap(Collection::stream)
+                .reduce(0, (partial, s) -> partial + Optional.ofNullable(s.getUnidades()).orElse(0), Integer::sum);
+        System.out.println(sum);
     }
 
 }
+

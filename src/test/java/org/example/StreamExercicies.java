@@ -83,7 +83,7 @@ public class StreamExercicies {
     public void threadThatPrintsNumbersList() {
         List<Integer> list = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         new Thread(() -> {
-            list.forEach(n -> System.out.println(n));
+            list.forEach(n -> System.out.print(n));
         }).start();
     }
 
@@ -220,7 +220,7 @@ public class StreamExercicies {
     @Test
     public void mostPopulatedCityOfEachCountry() {
         CountryDao countryDao = InMemoryWorldDao.getInstance();
-        final Predicate<Map.Entry<String, Optional<City>>> isPresent = entry -> entry.getValue().isPresent();
+//        final Predicate<Map.Entry<String, Optional<City>>> isPresent = entry -> entry.getValue().isPresent();
         final BiConsumer<String, Optional<City>> printEntry =
                 (k,v) -> {
                     City city = v.get();

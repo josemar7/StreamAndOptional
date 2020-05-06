@@ -17,6 +17,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.IntPredicate;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -29,12 +30,256 @@ import static java.util.stream.Collectors.*;
 
 public class StreamExercicies {
 
+    private static Stream<Employee> employeeStream = Arrays.stream(Employee.SOME);
+
     List<String> list = Arrays.asList(
             "alpha", "bravo", "charlie", "delta", "", "echo", "foxtrot");
     List<String> list1 = Arrays.asList(
             "The", "Quick", "BROWN", "Fox", "Jumped", "Over", "The", "LAZY", "DOG");
 
     private static final String WORD_REGEXP = "[- .:,]+";
+
+    @Test
+    public void udemy1() {
+        String[] names = new String[]{"Juan", "Pedro", "Jose"};
+        Arrays.stream(names).forEach(System.out::println);
+    }
+
+    @Test
+    public void udemy2() {
+        employeeStream
+                .filter(employee -> employee.getSalary() >= 2500)
+                .map(Employee::getName)
+                .sorted()
+                .forEach(System.out::println);
+    }
+
+    @Test
+    public void udemy3() {
+        employeeStream.map(Employee::getName)
+                .sorted()
+                .forEach(System.out::println);
+    }
+
+    @Test
+    public void udemy4() {
+        Random random = new Random();
+        Stream.generate(random::nextInt)
+                .limit(5)
+                .sorted()
+                .forEach(System.out::println);
+    }
+
+    @Test
+    public void udemy5() {
+        final Random random = new Random();
+        Supplier<Integer> supp = () -> {
+            Integer result = random.nextInt();
+            System.out.println("(supplying " + result + ")");
+            return result;
+        };
+        System.out.println("\n Test 1");
+        Stream<Integer> randoms = Stream.generate(supp);
+        System.out.println("First stream built");
+        randoms.filter(n -> n > 0)
+                .limit(3)
+                .forEach(System.out::println);
+        System.out.println("-------------------------");
+        Stream<Integer> randoms1 = Stream.generate(supp);
+        randoms1.limit(3)
+                .filter(n -> n > 0)
+                .forEach(System.out::println);
+    }
+
+    @Test
+    public void udemy6() {
+        Stream<Integer> stream = Stream.of(1, 2, 3, 4);
+        Stream<Integer> stream1 = stream.limit(2);
+        stream1.forEach(System.out::println);
+    }
+
+    @Test
+    public void udemy7() {
+        Set<Book> emp = Arrays.stream(Book.SOMEBOOKS)
+                .collect(Collectors.toSet());
+        emp.stream()
+                .flatMap(book -> Arrays.stream(book.getWords()))
+                .distinct()
+                .sorted()
+                .forEach(System.out::println);
+    }
+
+    @Test
+    public void udemy8() {
+        Stream<String> s = Stream.of("Hello");
+        s.forEach(System.out::println);
+    }
+
+    @Test
+    public void udemy9() {
+        final Random random = new Random();
+        Stream<Integer> randoms = Stream.generate(random::nextInt);
+        randoms.filter(n -> n > 0)
+                .distinct()
+                .limit(10)
+                .forEach(System.out::println);
+    }
+
+    @Test
+    public void udemy10() {
+        employeeStream
+                .sorted(Comparator.comparingInt(Employee::getSalary))
+                .takeWhile(e -> e.getSalary() <= 2000)
+                .collect(Collectors.toList())
+                .forEach(System.out::println);
+    }
+
+    @Test
+    public void udemy11() {
+        employeeStream.sorted(
+                Comparator.comparingInt(Employee::getSalary)
+                        .reversed()
+        )
+                .limit(10)
+                .map(Employee::getName)
+                .forEachOrdered(System.out::println);
+    }
+
+    @Test
+    public void udemy12() {
+        Random random = new Random();
+        Stream<Integer> randoms = Stream.generate(random::nextInt);
+        randoms.peek(System.out::println)
+                .filter( n -> n > 0 )
+                .distinct()
+                .limit( 10 )
+                .forEach(System.out::println);
+    }
+
+    @Test
+    public void udemy13() {
+        Boolean result = employeeStream.allMatch(employee -> employee.getName() != null);
+        System.out.println(result);
+
+        result = employeeStream.anyMatch(employee -> employee.getName().equals("Mike"));
+        System.out.println(result);
+
+        result = employeeStream.noneMatch(employee -> employee.getName().equals("Pepo"));
+        System.out.println(result);
+    }
+
+    @Test
+    public void udemy14() {
+        Employee[] employees = employeeStream.filter(employee -> employee.getSalary() < 2000)
+                .toArray(Employee[]::new);
+        for (Employee object : employees) {
+            System.out.println(object);
+        }
+    }
+
+    @Test
+    public void udemy15() {
+        System.out.println(employeeStream.filter(employee -> employee.getSalary() < 2000)
+                .count());
+    }
+
+    @Test
+    public void udemy16() {
+        Collection<String> collection = employeeStream
+                .map(Employee::getName)
+                .collect(Collectors.toCollection(ArrayList::new));
+        Optional<String> longest = collection.stream()
+                .max(Comparator.comparingInt(String::length));
+        System.out.println(longest.orElse("Yeeepa"));
+    }
+
+    @Test
+    public void udemy17() {
+        Collection<String> stringCollection = employeeStream
+                .map(Employee::getName)
+                .collect(Collectors.toCollection(ArrayList::new));
+        String allNames = stringCollection.stream()
+                .reduce("", ( a, b ) -> a + " " + b );
+        System.out.println(allNames);
+    }
+
+    @Test
+    public void udemy18() {
+        Collection<String> stringCollection = employeeStream
+                .map(Employee::getName)
+                .collect(Collectors.toCollection(ArrayList::new));
+        StringBuilder summary = stringCollection.stream().collect(
+                () -> new StringBuilder(),
+                ( StringBuilder builder, String s ) -> builder.append(s),
+                ( StringBuilder builder1, StringBuilder builder2 ) -> builder1.append(builder2)
+        );
+        System.out.println(summary);
+
+        summary = stringCollection.stream().collect(
+                StringBuilder::new,
+                StringBuilder::append,
+                StringBuilder::append
+        );
+        System.out.println(summary);
+
+        String s = stringCollection.stream()
+                .collect(Collectors.joining());
+        System.out.println(s);
+    }
+
+    @Test
+    public void udemy19() {
+        TreeSet<Employee> treeSet = employeeStream.collect(Collectors.toCollection(
+                () -> new TreeSet<>(
+                        Comparator.comparingInt(Employee::getSalary)
+                )
+        ));
+        treeSet.forEach(System.out::println);
+    }
+
+    @Test
+    public void udemy20() {
+        Map<String, Integer> salaries = employeeStream.collect(
+                Collectors.toMap(Employee::getName,
+                        Employee::getSalary)
+        );
+        System.out.println(salaries);
+    }
+
+    @Test
+    public void udemy21() {
+        Map<Integer, List<Employee>> brackets = employeeStream.collect(
+                Collectors.groupingBy(
+                        e -> e.getSalary() / 1000
+                )
+        );
+        System.out.println(brackets);
+    }
+
+    @Test
+    public void udemy22() {
+        Map<Boolean, List<Employee>> emp = employeeStream.collect(
+                Collectors.partitioningBy(employee -> employee.getSalary() > 2000)
+        );
+        System.out.println(emp);
+    }
+
+    @Test
+    public void udemy23() {
+        Integer max = IntStream.range(0, 10)
+                .max().getAsInt();
+        System.out.println(max);
+    }
+
+    @Test
+    public void udemy24() {
+        System.out.println(employeeStream
+                .peek(System.out::println)
+                .mapToDouble(Employee::getSalary)
+                .peek(System.out::println)
+                .average()
+                .getAsDouble());
+    }
 
     @Test
     public void stringFirstLetterOfEachWord() {
